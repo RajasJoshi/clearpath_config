@@ -276,3 +276,114 @@ class VelodyneLidar(BaseLidar3D):
 
     def set_device_type(self, device_type: str) -> None:
         self.device_type = device_type
+
+class OusterLidar(BaseLidar3D):
+    SENSOR_MODEL = "ouster_lidar"
+
+    FRAME_ID = "laser"
+    IP_PORT = 7502
+
+    OS0_32 = "OS032"
+    OS0_64 = "OS064"
+    OS0_128 = "OS0128"
+    OS1_32 = "OS132"
+    OS1_64 = "OS164"
+    OS1_128 = "OS1128"
+    OS2_32 = "OS232"
+    OS2_64 = "OS264"
+    OS2_128 = "OS2128"
+
+    DEVICE_TYPE = OS0_32
+    DEVICE_TYPES = [
+        OS0_32,
+        OS0_64,
+        OS0_128,
+        OS1_32,
+        OS1_64,
+        OS1_128,
+        OS2_32,
+        OS2_64,
+        OS2_128
+    ]
+
+    class ROS_PARAMETER_KEYS:
+        FRAME_ID = "ouster_driver_node.frame_id"
+        IP_ADDRESS = "ouster_driver_node.device_ip"
+        IP_PORT = "ouster_driver_node.port"
+        DRIVER_NODE_MODEL = "ouster_driver_node.model"
+        TRANSFORM_NODE_MODEL = "ouster_transform_node.model"
+        FIXED_FRAME = "ouster_transform_node.fixed_frame"
+        TARGET_FRAME = "ouster_transform_node.target_frame"
+
+    class TOPICS:
+        SCAN = "scan"
+        POINTS = "points"
+        NAME = {
+            SCAN: "scan",
+            POINTS: "points",
+        }
+        RATE = {
+            SCAN: 10,
+            POINTS: 10
+        }
+
+    def __init__(
+            self,
+            idx: int = None,
+            name: str = None,
+            topic: str = BaseLidar3D.TOPIC,
+            frame_id: str = FRAME_ID,
+            ip: str = BaseLidar3D.IP_ADDRESS,
+            port: int = IP_PORT,
+            device_type: str = DEVICE_TYPE,
+            urdf_enabled: bool = BaseSensor.URDF_ENABLED,
+            launch_enabled: bool = BaseSensor.LAUNCH_ENABLED,
+            ros_parameters: str = BaseSensor.ROS_PARAMETERS,
+            parent: str = Accessory.PARENT,
+            xyz: List[float] = Accessory.XYZ,
+            rpy: List[float] = Accessory.RPY
+            ) -> None:
+        # Device Type:
+        self.set_device_type(device_type)
+        # ROS Parameter Template
+        ros_parameters_template = {
+            self.ROS_PARAMETER_KEYS.DRIVER_NODE_MODEL: OusterLidar.device_type,
+            self.ROS_PARAMETER_KEYS.TRANSFORM_NODE_MODEL: OusterLidar.device_type,
+            self.ROS_PARAMETER_KEYS.FIXED_FRAME: OusterLidar.frame_id,
+            self.ROS_PARAMETER_KEYS.TARGET_FRAME: OusterLidar.frame_id,
+        }
+        super().__init__(
+            idx,
+            name,
+            topic,
+            frame_id,
+            ip,
+            port,
+            urdf_enabled,
+            launch_enabled,
+            ros_parameters,
+            ros_parameters_template,
+            parent,
+            xyz,
+            rpy
+        )
+
+    @property
+    def device_type(self) -> str:
+        return self._device_type
+
+    @device_type.setter
+    def device_type(self, device_type) -> None:
+        assert device_type in self.DEVICE_TYPES, (
+            "Device type '%s' is not one of '%s'" % (
+                device_type,
+                self.DEVICE_TYPES
+            )
+        )
+        self._device_type = device_type
+
+    def get_device_type(self) -> str:
+        return self.device_type
+
+    def set_device_type(self, device_type: str) -> None:
+        self.device_type = device_type

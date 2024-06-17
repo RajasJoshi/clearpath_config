@@ -58,6 +58,7 @@ from clearpath_config.sensors.types.lidars_2d import (
 from clearpath_config.sensors.types.lidars_3d import (
     BaseLidar3D,
     VelodyneLidar,
+    OusterLidar,
 )
 
 from typing import List
@@ -164,9 +165,12 @@ class Lidar2D():
 
 class Lidar3D():
     VELODYNE_LIDAR = VelodyneLidar.SENSOR_MODEL
+    OUSTER_LIDAR = OusterLidar.SENSOR_MODEL
+
 
     MODEL = {
-        VELODYNE_LIDAR: VelodyneLidar
+        VELODYNE_LIDAR: VelodyneLidar,
+        OUSTER_LIDAR: OusterLidar
     }
 
     @classmethod
@@ -635,6 +639,38 @@ class SensorConfig(BaseConfig):
         )
         self._lidar3d.add(velodyne)
 
+    def add_ouster(
+            self,
+            # By Object
+            ouster: OusterLidar = None,
+            # By Parameters
+            frame_id: str = OusterLidar.FRAME_ID,
+            ip: str = OusterLidar.IP_ADDRESS,
+            port: int = OusterLidar.IP_PORT,
+            device_type: str = OusterLidar.DEVICE_TYPE,
+            urdf_enabled: bool = OusterLidar.URDF_ENABLED,
+            launch_enabled: bool = OusterLidar.LAUNCH_ENABLED,
+            parent: str = Accessory.PARENT,
+            xyz: List[float] = Accessory.XYZ,
+            rpy: List[float] = Accessory.RPY
+            ) -> None:
+        if ouster is None:
+            ouster = OusterLidar(
+                frame_id=frame_id,
+                ip=ip,
+                port=port,
+                device_type=device_type,
+                urdf_enabled=urdf_enabled,
+                launch_enabled=launch_enabled,
+                parent=parent,
+                xyz=xyz,
+                rpy=rpy
+            )
+        assert isinstance(ouster, OusterLidar), (
+            "Lidar3D object must be of type OusterLidar"
+        )
+        self._lidar3d.add(ouster)
+
     # Lidar3D: Remove Lidar3D by passing object or index
     def remove_lidar_3d(self, lidar_3d: BaseLidar3D | int) -> None:
         self._lidar3d.remove(lidar_3d)
@@ -659,6 +695,9 @@ class SensorConfig(BaseConfig):
     # Lidar3D: Get All Objects of Model UST
     def get_all_velodyne(self) -> List[VelodyneLidar]:
         return self.get_all_lidar_3d_by_model(Lidar3D.VELODYNE_LIDAR)
+    
+    def get_all_ouster(self) -> List[OusterLidar]:
+        return self.get_all_lidar_3d_by_model(Lidar3D.OUSTER_LIDAR)
 
     # Lidar3D: Set Lidar3D Object
     def set_lidar_3d(self, lidar_3d: BaseLidar3D) -> None:
